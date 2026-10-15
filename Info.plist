@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+<key>CFBundleExecutable</key><string>OrbitConvert</string>
+<key>CFBundleIdentifier</key><string>local.orbitconvert.app</string>
+<key>CFBundleName</key><string>OrbitConvert</string>
+<key>CFBundlePackageType</key><string>APPL</string>
+<key>CFBundleVersion</key><string>36</string>
+<key>CFBundleShortVersionString</key><string>0.36</string>
+<key>CFBundleIconFile</key><string>AppIcon</string>
+<key>CFBundleDocumentTypes</key><array><dict>
+<key>CFBundleTypeName</key><string>RAR Archive</string>
+<key>CFBundleTypeRole</key><string>Viewer</string>
+<key>LSHandlerRank</key><string>Alternate</string>
+<key>LSItemContentTypes</key><array><string>com.rarlab.rar-archive</string></array>
+<key>CFBundleTypeExtensions</key><array><string>rar</string></array>
+</dict></array>
+<key>UTImportedTypeDeclarations</key><array><dict>
+<key>UTTypeIdentifier</key><string>com.rarlab.rar-archive</string>
+<key>UTTypeConformsTo</key><array><string>public.archive</string></array>
+<key>UTTypeDescription</key><string>RAR Archive</string>
+<key>UTTypeTagSpecification</key><dict><key>public.filename-extension</key><array><string>rar</string></array><key>public.mime-type</key><string>application/vnd.rar</string></dict>
+</dict></array>
+<key>LSMinimumSystemVersion</key><string>13.0</string>
+<key>LSUIElement</key><true/>
+<key>NSAppleEventsUsageDescription</key><string>读取 Finder 文件路径；在你开启辅助转换后，调用已安装的 Pages、Numbers 或 Keynote 导出临时副本，不修改原文件。</string>
+</dict></plist>

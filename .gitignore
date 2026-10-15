@@ -1,0 +1,29 @@
+# Build products and local dependencies
+.build/
+.swiftpm/
+dist/
+work/
+Vendor/LAME/lame-3.100/
+*.app/
+*.dSYM/
+*.xcarchive/
+*.zip
+*.dmg
+.DS_Store
+xcuserdata/
+
+# Credentials and signing material must never enter the repository
+.env
+.env.*
+*.p12
+*.p8
+*.key
+*.mobileprovision
+*.provisionprofile
+
+# Local reports refer to developer paths and private test outputs
+CONVERSION_TEST_RESULTS.md
+OFFICE_TRIAL_RESULTS.md
+NATIVE_TEST_RESULTS.md
+BATCH_TEST_RESULTS.md
+V*_TEST_RESULTS.md
