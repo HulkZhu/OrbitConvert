@@ -1,5 +1,9 @@
 # OrbitConvert
 
+Current revision: **1.0.1 pre-release**, build **37**. This revision aligns
+the app version with release packaging and includes the original-code MIT
+license in the app's offline license viewer. Known compatibility limitations remain.
+
 A lightweight, local macOS file converter with a radial format picker.
 
 ![OrbitConvert icon](Assets/AppIcon.png)

@@ -18,7 +18,7 @@ if [ ! -f "$WEBP_LIB/libwebp.7.dylib" ] || [ ! -f "$WEBP_LIB/libsharpyuv.0.dylib
     printf 'Set ORBIT_WEBP_LIB to your libwebp 1.6.0 shared-library directory (see BUILDING.md).\n' >&2
     exit 1
 fi
-for license in THIRD_PARTY.md FILEFLIPPER_LICENSE.txt WEBP_LICENSE.txt WEBP_PATENTS.txt; do
+for license in LICENSE THIRD_PARTY.md FILEFLIPPER_LICENSE.txt WEBP_LICENSE.txt WEBP_PATENTS.txt; do
     test -s "$license" || { printf 'Missing license: %s\n' "$license" >&2; exit 1; }
 done
 test -s Assets/AppIcon.png
@@ -81,6 +81,6 @@ if [ "$APP_KB" -gt 48828 ]; then
 fi
 printf 'App installed size: %s KB\n' "$APP_KB"
 mkdir -p dist
-ditto --norsrc --noextattr --keepParent -c -k "$APP" "$PWD/dist/OrbitConvert-v0.36-category-actions.zip"
+ditto --norsrc --noextattr --keepParent -c -k "$APP" "$PWD/dist/OrbitConvert-v1.0.1.zip"
 printf 'Verified app: %s\n' "$APP"
-printf 'Verified app archive: %s\n' "$PWD/dist/OrbitConvert-v0.36-category-actions.zip"
+printf 'Verified app archive: %s\n' "$PWD/dist/OrbitConvert-v1.0.1.zip"

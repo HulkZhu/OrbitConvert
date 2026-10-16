@@ -17,14 +17,15 @@ cp -R Vendor "$PACKAGE/"
 cp LAME_LICENSE.txt "$PACKAGE/"
 cp FLAC_LICENSE.txt OGG_LICENSE.txt "$PACKAGE/"
 cp UNRAR_LICENSE.txt "$PACKAGE/"
-for file in Package.swift Info.plist build.sh export-source.sh BUILDING.md GITHUB_PUBLISH.md THIRD_PARTY.md FILEFLIPPER_LICENSE.txt WEBP_LICENSE.txt WEBP_PATENTS.txt .gitignore; do
+for file in Package.swift Info.plist build.sh export-source.sh BUILDING.md GITHUB_PUBLISH.md RELEASE_DESCRIPTION_ZH.md THIRD_PARTY.md FILEFLIPPER_LICENSE.txt WEBP_LICENSE.txt WEBP_PATENTS.txt .gitignore; do
     cp "$file" "$PACKAGE/$file"
 done
 cp README-GITHUB.md "$PACKAGE/README.md"
 cp README-GITHUB.md "$PACKAGE/README-GITHUB.md"
 if [ -f LICENSE ]; then cp LICENSE "$PACKAGE/LICENSE"; fi
 mkdir -p dist
-NAME=OrbitConvert-source.zip
+VERSION=$(/usr/libexec/PlistBuddy -c 'Print CFBundleShortVersionString' Info.plist)
+NAME="OrbitConvert-v${VERSION}-source.zip"
 if [ "$MODE" = --preview ]; then NAME=OrbitConvert-source-preview.zip; fi
 ditto --norsrc --noextattr --keepParent -c -k "$PACKAGE" "$PWD/dist/$NAME"
 printf 'Source directory: %s\nSource archive: %s\n' "$PACKAGE" "$PWD/dist/$NAME"

@@ -5,8 +5,8 @@
 <key>CFBundleIdentifier</key><string>local.orbitconvert.app</string>
 <key>CFBundleName</key><string>OrbitConvert</string>
 <key>CFBundlePackageType</key><string>APPL</string>
-<key>CFBundleVersion</key><string>36</string>
-<key>CFBundleShortVersionString</key><string>0.36</string>
+<key>CFBundleVersion</key><string>37</string>
+<key>CFBundleShortVersionString</key><string>1.0.1</string>
 <key>CFBundleIconFile</key><string>AppIcon</string>
 <key>CFBundleDocumentTypes</key><array><dict>
 <key>CFBundleTypeName</key><string>RAR Archive</string>

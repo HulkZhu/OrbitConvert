@@ -8,6 +8,7 @@ enum LicenseCatalog {
         var id: String { filename }
     }
     static let documents: [Document] = [
+        Document(title: "OrbitConvert · MIT · CHENGHAOZHU", filename: "LICENSE"),
         Document(title: "UnRAR · 解压许可", filename: "UNRAR_LICENSE.txt"),
         Document(title: "FLAC · BSD", filename: "FLAC_LICENSE.txt"),
         Document(title: "Ogg · BSD", filename: "OGG_LICENSE.txt"),
