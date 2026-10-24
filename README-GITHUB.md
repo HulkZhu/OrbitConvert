@@ -1,8 +1,10 @@
 # OrbitConvert
 
-Current revision: **1.0.1 pre-release**, build **37**. This revision aligns
-the app version with release packaging and includes the original-code MIT
-license in the app's offline license viewer. Known compatibility limitations remain.
+Current revision: **1.0.2 pre-release**, build **38**. This revision restores
+input monitoring after normal sleep/session suspension when permission remains valid.
+Permission loss, emergency stops and listener faults still require manual reconnection.
+Lifecycle state tests are included; real sleep/wake interaction needs device testing.
+Known compatibility limitations remain.
 
 A lightweight, local macOS file converter with a radial format picker.
 

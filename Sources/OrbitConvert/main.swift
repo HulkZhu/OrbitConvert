@@ -149,6 +149,25 @@ enum FinderFile {
     }
 }
 
+// Only lifecycle suspension may automatically reconnect. Faults always disarm it.
+struct InputLifecycle {
+    enum Pause: Hashable { case sleep, session }
+    var pauses: Set<Pause> = []
+    var resumePending = false
+    mutating func suspend(_ reason: Pause, connected: Bool) {
+        if pauses.isEmpty { resumePending = connected }
+        pauses.insert(reason)
+    }
+    mutating func resume(_ reason: Pause) { pauses.remove(reason) }
+    mutating func disarm() { resumePending = false }
+    mutating func takeResume(trusted: Bool) -> Bool {
+        guard trusted else { disarm(); return false }
+        guard pauses.isEmpty, resumePending else { return false }
+        resumePending = false
+        return true
+    }
+}
+
 final class Delegate: NSObject, NSApplicationDelegate {
     var status: NSStatusItem!
     var tap: CFMachPort?
@@ -167,6 +186,7 @@ final class Delegate: NSObject, NSApplicationDelegate {
     var progressPanel: NSPanel?
     var permissionTimer: Timer?
     var listenerSuspended = false
+    var inputLifecycle = InputLifecycle()
     var capturedAt: TimeInterval?
     var diagnostic: NSMenuItem!
     var listenerStatus: NSMenuItem!
@@ -198,6 +218,9 @@ final class Delegate: NSObject, NSApplicationDelegate {
         connect(prompt: false)
         permissionTimer = Timer(timeInterval: 0.25, repeats: true) { [weak self] _ in
             guard let self else { return }
+            if self.inputLifecycle.resumePending && !AXIsProcessTrusted() {
+                self.disconnectInput("辅助功能权限已撤销，请授权后手动重新连接")
+            }
             if let tap = self.tap {
                 if !AXIsProcessTrusted() || !CGEvent.tapIsEnabled(tap: tap) {
                     self.disconnectInput("权限已撤销或监听已停用，请授权后手动重新连接")
@@ -209,6 +232,8 @@ final class Delegate: NSObject, NSApplicationDelegate {
         RunLoop.main.add(permissionTimer!, forMode: .common)
         NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(suspendInput), name: NSWorkspace.willSleepNotification, object: nil)
         NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(suspendInput), name: NSWorkspace.sessionDidResignActiveNotification, object: nil)
+        NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(resumeInput), name: NSWorkspace.didWakeNotification, object: nil)
+        NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(resumeInput), name: NSWorkspace.sessionDidBecomeActiveNotification, object: nil)
         if let monitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown, .keyDown], handler: { [weak self] event in
             if event.type == .keyDown && event.keyCode != 53 { return }
             if event.type == .keyDown {
@@ -278,17 +303,36 @@ final class Delegate: NSObject, NSApplicationDelegate {
         DispatchQueue.main.asyncAfter(deadline: .now() + 5) { [weak floating] in floating?.orderOut(nil) }
     }
     @objc func enable() {
+        guard inputLifecycle.pauses.isEmpty else { return }
+        inputLifecycle.disarm()
         listenerSuspended = false
         connect(prompt: true)
     }
-    @objc func suspendInput() { disconnectInput("会话已暂停，鼠标监听已释放；请手动重新连接") }
+    @objc func suspendInput(_ notification: Notification) {
+        let reason: InputLifecycle.Pause = notification.name == NSWorkspace.willSleepNotification ? .sleep : .session
+        let connected = !listenerSuspended && tap.map { CGEvent.tapIsEnabled(tap: $0) } == true && AXIsProcessTrusted()
+        inputLifecycle.suspend(reason, connected: connected)
+        disconnectInput("会话已暂停，鼠标监听已释放；恢复会话后将检查权限并自动连接", lifecyclePause: true)
+    }
+    @objc func resumeInput(_ notification: Notification) {
+        inputLifecycle.resume(notification.name == NSWorkspace.didWakeNotification ? .sleep : .session)
+        guard inputLifecycle.resumePending else { return }
+        guard AXIsProcessTrusted() else {
+            disconnectInput("辅助功能权限不可用，请授权后手动重新连接")
+            return
+        }
+        guard inputLifecycle.takeResume(trusted: true) else { return }
+        clearGestureUI() // Never carry a captured gesture across a session boundary.
+        connect(prompt: false)
+    }
     func applicationWillTerminate(_ notification: Notification) {
         permissionTimer?.invalidate()
         disconnectInput("已退出")
         NSWorkspace.shared.notificationCenter.removeObserver(self)
         for monitor in monitors { NSEvent.removeMonitor(monitor) }
     }
-    func disconnectInput(_ reason: String) {
+    func disconnectInput(_ reason: String, lifecyclePause: Bool = false) {
+        if !lifecyclePause { inputLifecycle.disarm() }
         listenerSuspended = true
         gesture.abort()
         capturedAt = nil
@@ -693,9 +737,33 @@ if CommandLine.arguments.contains("--input-safety-self-test") {
     let owner = Delegate()
     precondition(!owner.inputMustPassThrough(systemDisabled: false, trusted: true))
     let token = owner.gesture.begin(.zero)
-    owner.suspendInput()
+    owner.suspendInput(Notification(name: NSWorkspace.willSleepNotification))
     precondition(owner.inputMustPassThrough(systemDisabled: false, trusted: true))
     precondition(!owner.gesture.accepts(token) && !owner.gesture.ownsMouse)
+    for first in [InputLifecycle.Pause.sleep, .session] {
+        let second: InputLifecycle.Pause = first == .sleep ? .session : .sleep
+        var lifecycle = InputLifecycle()
+        lifecycle.suspend(first, connected: true)
+        lifecycle.suspend(first, connected: false) // Duplicate notifications retain intent.
+        lifecycle.suspend(second, connected: false)
+        lifecycle.resume(first)
+        precondition(!lifecycle.takeResume(trusted: true))
+        lifecycle.resume(second)
+        precondition(lifecycle.takeResume(trusted: true))
+        precondition(!lifecycle.takeResume(trusted: true))
+        lifecycle.suspend(first, connected: true)
+        precondition(!lifecycle.takeResume(trusted: false))
+        lifecycle.resume(first)
+        precondition(!lifecycle.takeResume(trusted: true))
+        lifecycle.suspend(first, connected: false)
+        lifecycle.resume(first)
+        precondition(!lifecycle.takeResume(trusted: true))
+        lifecycle.suspend(first, connected: true)
+        lifecycle.disarm()
+        lifecycle.resume(first)
+        precondition(!lifecycle.takeResume(trusted: true))
+    }
+    print("PASS: lifecycle resume waits for both wake/session activation, reconnects once, and never rearms after permission loss or faults")
     print("PASS: idle and active permission loss / timeout / user-disabled faults release ownership, invalidate queued work, pass subsequent input and never automatically rearm; session suspension")
     exit(0)
 }

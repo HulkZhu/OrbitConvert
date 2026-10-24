@@ -81,6 +81,6 @@ if [ "$APP_KB" -gt 48828 ]; then
 fi
 printf 'App installed size: %s KB\n' "$APP_KB"
 mkdir -p dist
-ditto --norsrc --noextattr --keepParent -c -k "$APP" "$PWD/dist/OrbitConvert-v1.0.1.zip"
+ditto --norsrc --noextattr --keepParent -c -k "$APP" "$PWD/dist/OrbitConvert-v1.0.2.zip"
 printf 'Verified app: %s\n' "$APP"
-printf 'Verified app archive: %s\n' "$PWD/dist/OrbitConvert-v1.0.1.zip"
+printf 'Verified app archive: %s\n' "$PWD/dist/OrbitConvert-v1.0.2.zip"
